@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto - Juko Gaming</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilo simple para mostrar los errores debajo de cada campo en color rojo */
+        .error-message {
+            color: #ff4a57;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
@@ -27,22 +36,26 @@
     <section class="container-contacto">
         <div class="contacto-wrapper">
             
-            <form class="contacto-form">
+            <form class="contacto-form" id="formContacto" novalidate>
                 <div class="input-group">
                     <label>Nombre *</label>
-                    <input type="text" required>
+                    <input type="text" id="nombre">
+                    <div class="error-message" id="error-nombre">Por favor, ingrese un nombre válido (mínimo 3 caracteres).</div>
                 </div>
                 <div class="input-group">
                     <label>Email *</label>
-                    <input type="email" required>
+                    <input type="email" id="email">
+                    <div class="error-message" id="error-email">Ingrese un correo electrónico con formato válido.</div>
                 </div>
                 <div class="input-group">
-                    <label>Empresa / Organización</label>
-                    <input type="text">
+                    <label>Empresa / Organización *</label>
+                    <input type="text" id="empresa">
+                    <div class="error-message" id="error-empresa">Este campo no puede quedar vacío.</div>
                 </div>
                 <div class="input-group">
                     <label>Mensaje *</label>
-                    <textarea rows="6" required></textarea>
+                    <textarea rows="6" id="mensaje"></textarea>
+                    <div class="error-message" id="error-mensaje">El mensaje debe tener al menos 10 caracteres.</div>
                 </div>
                 <button type="submit" class="btn">Enviar Mensaje</button>
             </form>
@@ -77,6 +90,70 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        document.getElementById('formContacto').addEventListener('submit', function(evento) {
+            evento.preventDefault(); 
+
+            const nombre = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const empresa = document.getElementById('empresa').value.trim();
+            const mensaje = document.getElementById('mensaje').value.trim();
+
+            document.querySelectorAll('.error-message').forEach(error => error.style.display = 'none');
+
+            let formularioValido = true;
+
+            if (nombre.length < 3) {
+                document.getElementById('error-nombre').style.display = 'block';
+                formularioValido = false;
+            }
+
+            const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regexEmail.test(email)) {
+                document.getElementById('error-email').style.display = 'block';
+                formularioValido = false;
+            }
+
+            if (empresa === "") {
+                document.getElementById('error-empresa').style.display = 'block';
+                formularioValido = false;
+            }
+
+            if (mensaje.length < 10) {
+                document.getElementById('error-mensaje').style.display = 'block';
+                formularioValido = false;
+            }
+
+            if (formularioValido) {
+
+                const nClean = nombre.replace(/"/g, '""');
+                const eClean = email.replace(/"/g, '""');
+                const empClean = empresa.replace(/"/g, '""');
+                const mClean = mensaje.replace(/"/g, '""');
+
+                const cabeceras = "Nombre,Email,Empresa,Mensaje\n";
+                const datosFila = `"${nClean}","${eClean}","${empClean}","${mClean}"\n`;
+                const contenidoCSV = cabeceras + datosFila;
+
+                const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+                const linkDescarga = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                
+                linkDescarga.setAttribute("href", url);
+                linkDescarga.setAttribute("download", "registro_contacto.csv");
+                linkDescarga.style.visibility = 'hidden';
+
+                document.body.appendChild(linkDescarga);
+                linkDescarga.click();
+                document.body.removeChild(linkDescarga);
+
+                alert("formulario enviado");
+
+                document.getElementById('formContacto').reset();
+            }
+        });
+    </script>
 
 </body>
 </html>
